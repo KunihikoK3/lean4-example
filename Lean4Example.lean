@@ -23,6 +23,7 @@ example (a b c d e f : ℝ) (h : a * b = c * d) (h' : e = f) : a * (b * e) = c *
   mul_assoc,
   h]
 
+--
 section
 variable (a b : ℝ)
 
@@ -31,3 +32,4 @@ example : (a + b) * (a + b) = a * a + 2 * (a * b) + b * b  := by
 
 
 end
+--
