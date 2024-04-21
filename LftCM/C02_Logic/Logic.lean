@@ -1,4 +1,5 @@
-import Mathlib.Data.Real.Basic
+import Mathlib
+import LeanCopilot
 
 /-
 # Logics
@@ -41,8 +42,25 @@ True        this is trivial           truth
 
 /-!
 ## Implication and universal quantifiers
--/
+When you define an implication in Lean, such as p → q, you are essentially defining a function type. For instance, if you have a theorem or a lemma that states p → q, providing a proof for this is equivalent to providing a function that takes an argument of type p (a proof of p) and produces a result of type q (a proof of q).
 
+Let's use the square function as a simple numerical function to illustrate how an implication works as a function type in Lean. We will define a theorem that states an implication involving the square function.
+First, let's define the square function:
+-/
+def square (n : ℕ) : ℕ := n * n
+/-
+Now, let's state and prove a theorem that uses an implication. We will prove that if a natural number n is greater than 0, then its square is also greater than 0. This is a simple fact since the square of any positive number is positive.
+Here's how we can express and prove this theorem in Lean:
+-/
+theorem square_pos (n : ℕ) : n > 0 → square n > 0 :=by
+  intro h
+  simp only [square]
+  exact mul_pos h h
+/-
+In this proof, the implication n > 0 → square n > 0 is treated as a function that takes a proof of n > 0  and produces a proof of square n > 0.
+
+Apparently the intro h tactic in Lean does automatically define h to be the hypothesis of the implication. When you use intro h in the context of proving an implication, it introduces the antecedent of the implication as a hypothesis named h into the local context and shifts the goal to proving the consequent.
+-/
 theorem my_add_le_add (x y z w : ℝ) (h₁ : x ≤ y) (h₂ : z ≤ w) :
     x + z ≤ y + w :=
   add_le_add h₁ h₂
