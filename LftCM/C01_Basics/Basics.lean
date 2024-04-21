@@ -218,7 +218,7 @@ theorem myFactorial_pos (n : ℕ) : 0 < myFactorial n := by
   induction' n with n ih
   -- The `with n ih` clause names the induction hypothesis as ih for the inductive step, where ih states that the factorial of n is positive.
   · rw [myFactorial_zero]
-    simp
+    exact zero_lt_one
   · rw [succ_eq_add_one, myFactorial_add_one]
     apply mul_pos
     · exact succ_pos n
@@ -227,6 +227,8 @@ theorem myFactorial_pos (n : ℕ) : 0 < myFactorial n := by
 /-
 In Lean 4, induction' is a variant of the standard induction tactic used for performing proof by induction. This tactic is part of the set of tactics that have been slightly modified or renamed in Lean 4 compared to their counterparts in Lean 3, as part of the language's evolution and enhancement.
 -/
+
+-- In my opinion, induction below is more readable than induction' above
 theorem myFactorial_pos' (n : ℕ) : 0 < myFactorial n := by
   induction n
   case zero =>
@@ -238,6 +240,11 @@ theorem myFactorial_pos' (n : ℕ) : 0 < myFactorial n := by
     · exact succ_pos n
     · exact ih
 
+/-
+In Lean 4, the apply tactic is used to reduce the original goal to one or more subgoals that correspond to the premises of the applied statement.
+
+For instance, if you have a lemma hab : a → b and the current goal is to prove b, using apply hab will introduce a new subgoal to prove a. This is because apply uses the lemma to reduce the original goal (b) to a new goal (a) that, if proven, will satisfy the original goal due to the lemma.
+-/
 -- # Personal note: this scales!
 open BigOperators
 
