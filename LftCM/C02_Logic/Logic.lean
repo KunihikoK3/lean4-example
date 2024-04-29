@@ -3,6 +3,11 @@ import LeanCopilot
 
 /-
 # Logics
+[Avigad Lean 2022](https://icerm.brown.edu/video_archive/?play=2894)
+uses code that is quite similar to the one below.
+
+[Lean 2023](https://www.youtube.com/watch?v=iub1ULdXjTY&t=501s)
+uses the exact code code below. However Avigad's explanation is clearer.
 
 * Get used to be precise about logical connective, phrases like "to prove
   `A ∧ B` we have to prove `A` and `B`." are awkward but necessary.
@@ -41,7 +46,7 @@ True        this is trivial           truth
 -/
 
 /-
-The following is an example of an implication appearing as a HYPOTHESIS.
+The following is an example of an implication appearing as a *HYPOTHESIS*.
 -/
 namespace implication_examples
 variable (h : ∀ n, n > 5 → n > 3)  -- this is an implication
@@ -51,12 +56,12 @@ variable (ha : a > 5)
 
 -- Applying the hypothesis
 theorem a_gt_3 : a > 3 := by
-  apply h  -- note that apply the implication h changes the goal from a > 3 to a > 5
+  apply h  -- note that applying the implication h changes the goal from a > 3 to a > 5
   exact ha
 
 
 
--- The following is an example of an implication appearing as a GOAL.
+-- The following is an example of an implication appearing as a *GOAL*.
 variable (b : ℕ)
 
 -- Goal: Prove that if `b` is greater than 5, then it is greater than 3.
@@ -89,8 +94,9 @@ In this proof, the implication n > 0 → square n > 0 is treated as a function t
 Apparently the intro h tactic in Lean does automatically define h to be the hypothesis of the implication. When you use intro h in the context of proving an implication, it introduces the antecedent of the implication as a hypothesis named h into the local context and shifts the goal to proving the consequent.
 -/
 theorem my_add_le_add (x y z w : ℝ) (h₁ : x ≤ y) (h₂ : z ≤ w) : x + z ≤ y + w :=
-  add_le_add h₁ h₂
+add_le_add h₁ h₂
 
+#print my_add_le_add
 section
 
 variable (a b c d : ℝ)
@@ -157,6 +163,36 @@ end
 
 -- We'll use the following function below
 def fnUB (f : ℝ → ℝ) (a : ℝ) := ∀ x, f x ≤ a
+/-This is a proposition because it is a statement that can be either true or false, depending on the function 𝑓 and the value 𝑎. *def* may be used to define a proposition, see time 4:00 of [LFTCM 2023 Basics](https://www.youtube.com/watch?v=Ft_3jDl3qxQ&list=PLlF-CfQhukNn7xEbfL38eLgkveyk9_myQ&index=1&t=524s)
+-/
+#check fnUB
+
+-- The following is an example where fnUB is a proposition that is true
+def constantFunction (x: ℝ) : ℝ := 3
+-- notice that x is not used in the definition of constantFunction
+def a : ℝ := 5
+-- check that fnUB is true for constantFunction and a
+def exampleTrue : fnUB constantFunction a := by
+  intro x
+  simp only [constantFunction, a]
+  linarith
+
+-- from above fnUB is a proposition. It still remains a proposition when f and a are replaced by constantFunction and a:
+#check fnUB constantFunction a
+-- note that exampleTrue is of *type* fnUB constantFunction a
+#check exampleTrue
+-- and so according to Lean4 is a proof of fnUB constantFunction a; see time 4:15 of [LFTCM 2023 Basics](https://www.youtube.com/watch?v=Ft_3jDl3qxQ&list=PLlF-CfQhukNn7xEbfL38eLgkveyk9_myQ&index=1&t=524s)
+
+-- The following is an example where fnUB is a proposition that is false
+def increasingFunction (x: ℝ) : ℝ := x
+def b : ℝ := -1
+-- check that fnUB is false for increasingFunction and b
+def exampleFalse : ¬ fnUB increasingFunction b := by
+  intro x
+  specialize x 0
+  simp only [increasingFunction, b] at x
+  linarith
+
 
 section
 
@@ -177,6 +213,18 @@ theorem fnUB_add {f g a b} (hfa : fnUB f a) (hgb : fnUB g b) :
   specialize hgb x
   -- This specializes the bound of g at x, effectively stating g x ≤ b.
   linarith
+
+-- another proof of the same theorem. Use *example* instead of *theorem* to avoid naming the proof:
+
+example {f g a b} (hfa : fnUB f a) (hgb : fnUB g b) :
+    fnUB (f + g) (a + b) := by
+    intro x
+    dsimp
+    specialize hfa x
+    specialize hgb x
+    apply add_le_add hfa hgb
+
+
 
 
 end
@@ -207,8 +255,9 @@ example {f g} (ubf : fnHasUB f) (ubg : fnHasUB g) : fnHasUB (f + g) := by
   use a + b
   exact fnUB_add ha hb
 
-end
 
+
+end
 /-
 The existential quantifier in Lena comes with an axiom called *global choice*.
 It provides a witness for all proofs of existentially quantified statements and
