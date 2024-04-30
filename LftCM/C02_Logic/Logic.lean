@@ -247,6 +247,7 @@ example : 5 ∣ 20 := by
 section
 
 def fnHasUB (f : ℝ → ℝ) := ∃ a, fnUB f a
+#check fnHasUB
 
 example {f g} (ubf : fnHasUB f) (ubg : fnHasUB g) : fnHasUB (f + g) := by
   simp only [fnHasUB] at *
@@ -264,11 +265,29 @@ It provides a witness for all proofs of existentially quantified statements and
 guarantees that the witness is the same if we deconstruct the same statement twice.
 -/
 #check Exists.choose
+-- apparently Exists.choose is a variant of the axiom of choice
 #check Exists.choose_spec
 
 noncomputable def chooseNat (h : ∃ (x : ℕ), x > 4) : ℕ := by
   exact Exists.choose h
+/-!
+In the context of Lean, the term "noncomputable" is used to indicate that a definition or function cannot be computed algorithmically within the Lean proof assistant's framework. This typically occurs when the definition relies on axioms or principles that do not allow for constructive computation, such as the axiom of choice or the law of excluded middle.
 
+The specific Lean code snippet you provided:
+
+```lean
+noncomputable def chooseNat (h : ∃ (x : ℕ), x > 4) : ℕ := by
+  exact Exists.choose h
+```
+
+Here's a breakdown of what each part means:
+
+ **noncomputable**: This keyword is used to mark the definition as noncomputable. In Lean, certain operations or definitions that depend on non-constructive axioms (like the axiom of choice) must be explicitly marked as noncomputable. This is because Lean, by default, operates under a computationally constructive framework where every function or operation should ideally be computable.
+
+**by exact Exists.choose h**:  `Exists.choose` is a function in Lean that, given a proof of an existential quantifier (in this case, `h`), returns a witness satisfying the existential statement. Here, it returns some natural number `x` such that `x > 4`. The `exact` tactic is used to specify that `Exists.choose h` directly provides the value that `chooseNat` should return.
+
+The use of `noncomputable` is crucial here because `Exists.choose` relies on the axiom of choice, which asserts that for any nonempty set, one can choose an element from the set without specifying a particular rule for making the choice. In constructive mathematics, which Lean's kernel is based on, such an axiom is not generally accepted because it does not constructively provide the element. Thus, any definition relying on this axiom must be marked as noncomputable to signal that it cannot be computed purely algorithmically within Lean's constructive framework.
+-/
 /-!
 ## Negation
 
@@ -278,6 +297,23 @@ noncomputable def chooseNat (h : ∃ (x : ℕ), x > 4) : ℕ := by
 section
 
 variable {f : ℝ → ℝ}
+
+-- version from [LFTCM 2023](https://www.youtube.com/watch?v=iub1ULdXjTY&list=PLlF-CfQhukNn7xEbfL38eLgkveyk9_myQ&index=2&t=519s)
+example (h : ∀ a, ∃ x, f x > a) : ¬ fnHasUB f := by
+  simp only [fnHasUB]
+  -- so far we have ¬∃ a, fnUB f a . Recall that ¬ A` is an abbreviation for `A → False so we have an implication and so can use intro
+  intro h'
+  -- this gives h' : ∃ a, fnUB f a which is an existential statement and so we can use rcases to deconstruct it
+  rcases h' with ⟨a, ha⟩
+  -- now we have a : ℝ and ha : fnUB f a. We can use h to get a contradiction
+  specialize h a
+  -- h : ∃ x, f x > a. We can use this to get a contradiction
+  rcases h with ⟨b, hb⟩
+  -- now we have b : ℝ and hb : f b > a. We can use ha to get a contradiction
+  specialize ha b
+  -- ha : f b ≤ a. We can use this to get a contradiction
+  linarith
+
 
 -- Demonstrate `rintro`
 
@@ -292,13 +328,22 @@ example (h : ∀ a, ∃ x, f x > a) : ¬ fnHasUB f := by
   contradiction
 
 
+-- using aesop
+example (h : ∀ a, ∃ x, a < f x) : ¬ fnHasUB f := by
+  simp only [fnHasUB, fnUB]
+  aesop
+  -- aesop? will suggest steps
+
 -- Repeat with demonstration of `simp`, `simp only`, `push_neg`
 
 example (h : ∀ a, ∃ x, a < f x) : ¬ fnHasUB f := by
   simp only [fnHasUB, fnUB]
   push_neg
+  /-  push_neg is a tactic that simplifies negations within expressions, particularly useful for working with logical statements. It pushes negations as far inside the expressions as possible, transforming the structure of the statements to make them easier to work with or understand. For example, it can turn a hypothesis of the form ¬ ∀ x, ∃ y, x ≤ y into ∃ x, ∀ y, y < x by pushing the negation through the quantifiers and changing the relational operators accordingly.
+  -/
   assumption
-
+/- "assumption" refers to a tactic used within the proof environment to utilize a hypothesis that matches the current goal, thereby proving it directly. When the assumption tactic is invoked, Lean checks the context for a hypothesis that can directly conclude the proof of the current goal. If such a hypothesis exists, the goal is considered proven by that assumption.
+-/
 end
 
 /-!
@@ -313,10 +358,20 @@ variable {x y : ℝ}
 
 example (h₀ : x ≤ y) (h₁ : ¬ y ≤ x) : x ≤ y ∧ x ≠ y := by
   constructor
+  /-constructor: Essentially, it splits the goal x ≤ y ∧ x ≠ y into two subgoals: x ≤ y and x ≠ y.
+  -/
   · assumption
   · linarith
 
+-- conjunction in hypothesis
 -- Demonstrate `rcases`, `.1`,
+
+example (h : x ≤ y ∧ x ≠ y) : ¬ y ≤ x := by
+  rcases h with ⟨h₁, h₂⟩
+  push_neg
+  exact lt_of_le_of_ne h₁ h₂
+
+
 
 example (h : x ≤ y ∧ x ≠ y) : ¬ y ≤ x := by
   --rcases h with ⟨h₁, h₂⟩
