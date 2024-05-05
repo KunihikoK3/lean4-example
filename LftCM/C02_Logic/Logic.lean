@@ -49,6 +49,7 @@ True        this is trivial           truth
 The following is an example of an implication appearing as a *HYPOTHESIS*.
 -/
 namespace implication_examples
+-- a namespace is a structural feature used to organize and group definitions, such as functions, types, and variables, into hierarchical, named segments of code. This organization helps in managing the scope and accessibility of these definitions
 variable (h : ∀ n, n > 5 → n > 3)  -- this is an implication
 
 -- Known Fact: We have a number `a` that is known to be greater than 5.
@@ -80,6 +81,8 @@ Let's use the square function as a simple numerical function to illustrate how a
 First, let's define the square function:
 -/
 def square (n : ℕ) : ℕ := n * n
+--
+#print square
 /-
 Now, let's state and prove a theorem that uses an implication. We will prove that if a natural number n is greater than 0, then its square is also greater than 0. This is a simple fact since the square of any positive number is positive.
 Here's how we can express and prove this theorem in Lean:
@@ -292,6 +295,7 @@ The use of `noncomputable` is crucial here because `Exists.choose` relies on the
 ## Negation
 
 `¬ A` is an abbreviation for `A → False`.
+In propositional logic, an implication $A \implies B$ is true in all cases except where \(A\) is true and \(B\) is false. If we set \(B\) as \(\text{false}\), the implication \(A \implies \text{false}\) translates to a situation where \(A\) must be false for the implication to hold true, because there is no case where \(A\) can be true (since the outcome would then be false, which contradicts the implication being true). This is precisely the definition of \(\neg A\), which asserts that \(A\) is false.
 -/
 
 section
@@ -368,10 +372,15 @@ example (h₀ : x ≤ y) (h₁ : ¬ y ≤ x) : x ≤ y ∧ x ≠ y := by
 
 example (h : x ≤ y ∧ x ≠ y) : ¬ y ≤ x := by
   rcases h with ⟨h₁, h₂⟩
+  --rcases h with ⟨h₁, h₂⟩ is used to destructure the conjunction in the hypothesis h into its two components h₁ : x ≤ y and h₂ : x ≠ y.
   push_neg
   exact lt_of_le_of_ne h₁ h₂
 
-
+example (h : x ≤ y ∧ x ≠ y) : ¬ y ≤ x := by
+  rcases h with ⟨h₁, h₂⟩
+  intro h₃
+  apply h₂
+  exact LE.le.antisymm h₁ h₃
 
 example (h : x ≤ y ∧ x ≠ y) : ¬ y ≤ x := by
   --rcases h with ⟨h₁, h₂⟩
