@@ -407,8 +407,11 @@ variable (x y z : ℝ)
 example : x < |y| → x < y ∨ x < -y := by
   intro h
   by_cases hy : y < 0
-  · right
+  · right  -- right is used to prove the right side of a disjunction, in this case x < -y
     rwa [abs_of_neg hy] at h
+    /-
+    The rw tactic in Lean 4 is used to rewrite the goal or a *hypothesis* using an equality or equivalence.For example, rw h at h2 will rewrite using h in hypothesis h2. rwa is a variant of rw that also tries to solve the goal after rewriting by using an assumption.
+    -/
   · left
     rw [not_lt] at hy
     rwa [abs_of_nonneg hy] at h
@@ -417,7 +420,7 @@ example : x < |y| → x < y ∨ x < -y := by
 
 example (h : (x < y ∧ y < z) ∨ x < z) : x < z := by
   rcases h with (⟨h1,h3⟩|h2)
-  · trans
+  · trans y
     · exact h1
     · exact h3
   · assumption

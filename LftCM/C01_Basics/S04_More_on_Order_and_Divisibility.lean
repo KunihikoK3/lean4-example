@@ -1,6 +1,6 @@
-import LftCM.Common
-import Mathlib.Data.Real.Basic
-
+-- import LftCM.Common
+import Mathlib
+import LeanCopilot
 namespace C02S04
 
 section
@@ -39,17 +39,44 @@ example : min a b = min b a := by
     apply min_le_left
 
 example : max a b = max b a := by
-  sorry
+  apply le_antisymm
+  repeat
+    apply max_le
+    apply le_max_right
+    apply le_max_left
+
+
+
 example : min (min a b) c = min a (min b c) := by
-  sorry
+  apply le_antisymm
+  · simp_all only [le_min_iff,
+       min_le_iff,
+       le_refl,
+       true_or,
+       or_true,
+       and_self]
+  · simp_all only [le_min_iff,
+       min_le_iff,
+       le_refl,
+       true_or,
+       or_true,
+       and_self]
+
+
+
 theorem aux : min a b + c ≤ min (a + c) (b + c) := by
-  sorry
-example : min a b + c = min (a + c) (b + c) := by
-  sorry
+  simp
+
+
 #check (abs_add : ∀ a b : ℝ, |a + b| ≤ |a| + |b|)
 
-example : |a| - |b| ≤ |a - b| :=
-  sorry
+example : |a| - |b| ≤ |a - b| := by
+  have h1 : |a| = |a - b + b| := by rw [sub_add_cancel]
+  rw [h1]
+  have h2 : |a - b + b| ≤ |a - b| + |b| := by apply abs_add
+  linarith
+
+
 end
 
 section
@@ -80,5 +107,3 @@ variable (m n : ℕ)
 example : Nat.gcd m n = Nat.gcd n m := by
   sorry
 end
-
-
