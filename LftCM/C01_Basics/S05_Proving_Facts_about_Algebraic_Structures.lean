@@ -1,5 +1,7 @@
-import LftCM.Common
-import Mathlib.Topology.MetricSpace.Basic
+-- import LftCM.Common
+import Mathlib
+import LeanCopilot
+
 
 section
 variable {α : Type*} [PartialOrder α]
@@ -34,22 +36,22 @@ variable (x y z : α)
 #check (sup_le : x ≤ z → y ≤ z → x ⊔ y ≤ z)
 
 example : x ⊓ y = y ⊓ x := by
-  sorry
+  rw [inf_comm]
 
 example : x ⊓ y ⊓ z = x ⊓ (y ⊓ z) := by
-  sorry
+  rw [inf_assoc]
 
 example : x ⊔ y = y ⊔ x := by
-  sorry
+  rw [sup_comm]
 
 example : x ⊔ y ⊔ z = x ⊔ (y ⊔ z) := by
-  sorry
+  rw [sup_assoc]
 
 theorem absorb1 : x ⊓ (x ⊔ y) = x := by
-  sorry
+  simp
 
 theorem absorb2 : x ⊔ x ⊓ y = x := by
-  sorry
+  simp
 
 end
 
@@ -60,15 +62,21 @@ variable (x y z : α)
 #check (inf_sup_left : x ⊓ (y ⊔ z) = x ⊓ y ⊔ x ⊓ z)
 #check (inf_sup_right : (x ⊔ y) ⊓ z = x ⊓ z ⊔ y ⊓ z)
 #check (sup_inf_left : x ⊔ y ⊓ z = (x ⊔ y) ⊓ (x ⊔ z))
-#check (sup_inf_right : x ⊓ y ⊔ z = (x ⊔ z) ⊓ (y ⊔ z))
+#check sup_inf_right
 end
 
 section
 variable {α : Type*} [Lattice α]
 variable (a b c : α)
+/-
+[Lattice](https://en.wikipedia.org/wiki/Lattice_(order))
+A lattice is an abstract structure studied in the mathematical subdisciplines of order theory and abstract algebra. It consists of a partially ordered set in which every pair of elements has a unique supremum (also called a least upper bound or join) and a unique infimum (also called a greatest lower bound or meet). An example is given by the power set of a set, partially ordered by inclusion, for which the supremum is the union and the infimum is the intersection. Another example is given by the natural numbers, partially ordered by divisibility, for which the supremum is the least common multiple and the infimum is the greatest common divisor.
+-/
+
+
 
 example (h : ∀ x y z : α, x ⊓ (y ⊔ z) = x ⊓ y ⊔ x ⊓ z) : a ⊔ b ⊓ c = (a ⊔ b) ⊓ (a ⊔ c) := by
-  sorry
+
 
 example (h : ∀ x y z : α, x ⊔ y ⊓ z = (x ⊔ y) ⊓ (x ⊔ z)) : a ⊓ (b ⊔ c) = a ⊓ b ⊔ a ⊓ c := by
   sorry
@@ -107,4 +115,3 @@ example (x y : X) : 0 ≤ dist x y := by
   sorry
 
 end
-

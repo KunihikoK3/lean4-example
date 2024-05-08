@@ -93,7 +93,14 @@ example : x ∣ x ^ 2 := by
    apply dvd_mul_left
 
 example (h : x ∣ w) : x ∣ y * (x * z) + x ^ 2 + w ^ 2 := by
-  sorry
+  apply dvd_add
+  · apply dvd_add
+    · apply dvd_mul_of_dvd_right
+      exact dvd_mul_right _ _
+    · apply dvd_pow
+      all_goals simp [*]
+  · apply dvd_pow
+    all_goals simp [*]
 end
 
 section
@@ -105,5 +112,5 @@ variable (m n : ℕ)
 #check (Nat.lcm_zero_left n : Nat.lcm 0 n = 0)
 
 example : Nat.gcd m n = Nat.gcd n m := by
-  sorry
+  rw [Nat.gcd_comm]
 end
