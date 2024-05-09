@@ -1,5 +1,6 @@
-import LftCM.Common
+-- import LftCM.Common
 import Mathlib.Data.Real.Basic
+import LeanCopilot
 
 namespace C03S01
 
@@ -7,8 +8,14 @@ namespace C03S01
 
 #check ∀ x y ε : ℝ, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε
 
+/- In words, we would say “for every x, y, and ε, if 0 < ε ≤ 1, the absolute value of x is less than ε, and the absolute value of y is less than ε, then the absolute value of x * y is less than ε.” In Lean, in a sequence of implications there are implicit parentheses grouped to the right. So the expression above means “if 0 < ε then if ε ≤ 1 then if |x| < ε …” As a result, the expression says that all the assumptions together imply the conclusion.
+
+see https://leanprover-community.github.io/mathematics_in_lean/C03_Logic.html
+-/
 theorem my_lemma : ∀ x y ε : ℝ, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε :=
   sorry
+
+/-see about twenty lines below for proof of my_lemma-/
 
 section
 variable (a b δ : ℝ)
@@ -41,11 +48,12 @@ theorem my_lemma3 :
 theorem my_lemma4 :
     ∀ {x y ε : ℝ}, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε := by
   intro x y ε epos ele1 xlt ylt
+  have h1 : |x| < 1 := by exact xlt.trans_le ele1
   calc
-    |x * y| = |x| * |y| := sorry
-    _ ≤ |x| * ε := sorry
-    _ < 1 * ε := sorry
-    _ = ε := sorry
+    |x * y| = |x| * |y| := by rw [abs_mul]
+    _ ≤ |x| * ε := by gcongr
+    _ < 1 * ε := by gcongr
+    _ = ε := by rw [one_mul]
 
 def FnUb (f : ℝ → ℝ) (a : ℝ) : Prop :=
   ∀ x, f x ≤ a

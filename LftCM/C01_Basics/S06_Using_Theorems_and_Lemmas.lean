@@ -1,7 +1,10 @@
-import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib
 import LeanCopilot
 --import LftCM.Common
 
+/-
+These examples come from the [online textbook](https://leanprover-community.github.io/mathematics_in_lean/C02_Basics.html#using-theorems-and-lemmas)
+-/
 variable (a b c d e : ℝ)
 open Real
 
@@ -25,7 +28,7 @@ example (x y z : ℝ) (h₀ : x ≤ y) (h₁ : y ≤ z) : x ≤ z := by
   . apply h₁
 
 example (x y z : ℝ) (h₀ : x ≤ y) (h₁ : y ≤ z) : x ≤ z := by
- suggest_tactics
+ linarith
 
 example (x y z : ℝ) (h₀ : x ≤ y) (h₁ : y ≤ z) : x ≤ z :=
   le_trans h₀ h₁
@@ -44,7 +47,7 @@ example (x : ℝ) : x ≤ x :=
 
 -- Try this.
 example (h₀ : a ≤ b) (h₁ : b < c) (h₂ : c ≤ d) (h₃ : d < e) : a < e := by
-  sorry
+  linarith
 
 example (h₀ : a ≤ b) (h₁ : b < c) (h₂ : c ≤ d) (h₃ : d < e) : a < e := by
   linarith
@@ -88,22 +91,25 @@ example (h₀ : a ≤ b) (h₁ : c < d) : a + exp c + e < b + exp d + e := by
     apply exp_lt_exp.mpr h₁
   apply le_refl
 
-example (h₀ : d ≤ e) : c + exp (a + d) ≤ c + exp (a + e) := by sorry
+example (h₀ : d ≤ e) : c + exp (a + d) ≤ c + exp (a + e) := by
+  gcongr
 
 example : (0 : ℝ) < 1 := by norm_num
 
 example (h : a ≤ b) : log (1 + exp a) ≤ log (1 + exp b) := by
-  have h₀ : 0 < 1 + exp a := by sorry
-  have h₁ : 0 < 1 + exp b := by sorry
-  apply (log_le_log h₀ h₁).mpr
-  sorry
+  gcongr
+
+example (h : a ≤ b) : log (1 + exp a) ≤ log (1 + exp b) := by
+  have h₀ : 0 < 1 + exp a := by positivity
+  have h₁ : 0 < 1 + exp b := by positivity
+  exact log_mono h₀.le
 
 example : 0 ≤ a ^ 2 := by
   -- apply?
   exact sq_nonneg a
 
 example (h : a ≤ b) : c - exp b ≤ c - exp a := by
-  sorry
+  gcongr
 
 example : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
   have h : 0 ≤ a ^ 2 - 2 * a * b + b ^ 2
@@ -118,14 +124,33 @@ example : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
     _ = a ^ 2 + b ^ 2 := by ring
 
 
-example : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
+def usefulLemma : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
   have h : 0 ≤ a ^ 2 - 2 * a * b + b ^ 2
   calc
     a ^ 2 - 2 * a * b + b ^ 2 = (a - b) ^ 2 := by ring
     _ ≥ 0 := by apply pow_two_nonneg
   linarith
 
-example : |a * b| ≤ (a ^ 2 + b ^ 2) / 2 := by
-  sorry
+
+
+ example : |a * b| ≤ (a ^ 2 + b ^ 2) / 2 := by
+  by_cases h : 0 ≤ a * b
+  · have h1: |a * b| = a * b := by rw [abs_of_nonneg h]
+    rw [h1]
+    have h2: a * b ≤ a ^ 2 / 2 + b ^ 2 / 2 := by
+      have h3: 2 * a * b ≤ a ^ 2 + b ^ 2 := usefulLemma a b
+      linarith
+    linarith
+  · have h1: a * b < 0 := by linarith
+    have h2: |a * b| = -(a * b) := by rw [abs_of_neg h1]
+    rw [h2]
+    have h3 : 0 ≤ a ^ 2 + 2 * a * b + b ^ 2 := by
+      calc
+        a ^ 2 + 2 * a * b + b ^ 2 = (a + b) ^ 2 := by ring
+       _ ≥ 0 := by apply pow_two_nonneg
+    linarith
 
 #check abs_le'.mpr
+/- I should have used this for in the above example
+see https://leanprover-community.github.io/mathematics_in_lean/C02_Basics.html#using-theorems-and-lemmas
+-/
