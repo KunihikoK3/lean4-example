@@ -1,5 +1,6 @@
-import LftCM.Common
-import Mathlib.Data.Real.Basic
+-- import LftCM.Common
+import Mathlib
+import LeanCopilot
 
 set_option autoImplicit true
 
@@ -55,7 +56,12 @@ example (lbf : FnHasLb f) (lbg : FnHasLb g) : FnHasLb fun x ↦ f x + g x := by
   sorry
 
 example {c : ℝ} (ubf : FnHasUb f) (h : c ≥ 0) : FnHasUb fun x ↦ c * f x := by
-  sorry
+  rcases ubf with ⟨a, ubfa⟩
+  use c * a
+  dsimp [FnUb] at *
+  intro x
+  exact mul_le_mul_of_nonneg_left (ubfa x) h
+
 
 example : FnHasUb f → FnHasUb g → FnHasUb fun x ↦ f x + g x := by
   rintro ⟨a, ubfa⟩ ⟨b, ubgb⟩
