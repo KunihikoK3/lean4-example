@@ -1,5 +1,6 @@
-import LftCM.Common
-import Mathlib.Data.Real.Basic
+-- import LftCM.Common
+import Mathlib
+import LeanCopilot
 
 namespace C03S03
 
@@ -8,8 +9,17 @@ variable (a b : ℝ)
 
 example (h : a < b) : ¬b < a := by
   intro h'
+  /-introducing the assumption h' : b < a using the intro tactic. This moves b < a from the goal into a hypothesis named h'. The goal *now becomes* false.
+  -/
   have : a < a := lt_trans h h'
+  /-The have tactic is used to prove a new fact. The new fact is that a < a. This is done by using the transitivity of the less-than relation. The transitivity of the less-than relation states that if a < b and b < c, then a < c. In this case, h: a < b and h': b < a, so a < a.
+
+  a < a is a contradiction, so the goal is now false.
+
+  When you use *have* without providing a label, Lean uses the name *this*, providing a convenient way to refer back to it.
+   -/
   apply lt_irrefl a this
+  /-The final step is to apply lt_irrefl a to this : a < a using the apply tactic. This creates a contradiction, thus proving false.-/
 
 def FnUb (f : ℝ → ℝ) (a : ℝ) : Prop :=
   ∀ x, f x ≤ a
@@ -32,11 +42,23 @@ example (h : ∀ a, ∃ x, f x > a) : ¬FnHasUb f := by
   have : f x ≤ a := fnuba x
   linarith
 
-example (h : ∀ a, ∃ x, f x < a) : ¬FnHasLb f :=
-  sorry
+example (h : ∀ a, ∃ x, f x < a) : ¬FnHasLb f := by
+  intro fnlb
+  rcases fnlb with ⟨a, fnlba⟩
+  rcases h a with ⟨x, hx⟩
+  have : a ≤ f x := fnlba x
+  linarith
 
-example : ¬FnHasUb fun x ↦ x :=
-  sorry
+
+example : ¬FnHasUb fun x ↦ x := by
+  intro fnub
+  rcases fnub with ⟨a, fnuba⟩
+  have : a < a + 1 := by linarith
+  have h1 : a + 1 ≤ a := fnuba (a + 1)
+  linarith
+
+
+
 
 #check (not_le_of_gt : a > b → ¬a ≤ b)
 #check (not_lt_of_ge : a ≥ b → ¬a < b)
@@ -44,7 +66,7 @@ example : ¬FnHasUb fun x ↦ x :=
 #check (le_of_not_gt : ¬a > b → a ≤ b)
 
 example (h : Monotone f) (h' : f a < f b) : a < b := by
-  sorry
+  suggest_tactics
 
 example (h : a ≤ b) (h' : f b < f a) : ¬Monotone f := by
   sorry
@@ -136,4 +158,3 @@ example (h : 0 < 0) : a > 37 := by
   contradiction
 
 end
-

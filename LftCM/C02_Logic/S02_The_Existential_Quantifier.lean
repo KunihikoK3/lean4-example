@@ -135,7 +135,10 @@ example (divab : a ∣ b) (divbc : b ∣ c) : a ∣ c := by
   use d * e; ring
 
 example (divab : a ∣ b) (divac : a ∣ c) : a ∣ b + c := by
-  sorry
+  rcases divab with ⟨d, beq⟩
+  rcases divac with ⟨e, ceq⟩
+  rw [ceq, beq]
+  use d + e; ring
 
 end
 
@@ -149,15 +152,25 @@ example {c : ℝ} : Surjective fun x ↦ x + c := by
   dsimp; ring
 
 example {c : ℝ} (h : c ≠ 0) : Surjective fun x ↦ c * x := by
-  sorry
+  intro x
+  use x / c
+  dsimp
+  field_simp; ring
 
 example (x y : ℝ) (h : x - y ≠ 0) : (x ^ 2 - y ^ 2) / (x - y) = x + y := by
   field_simp [h]
   ring
 
 example {f : ℝ → ℝ} (h : Surjective f) : ∃ x, f x ^ 2 = 4 := by
+  /-note f is not the function x ↦ x^2
+    goal here is to show (given f is some unknown surjective function) that there exists x such that f(x)^2=4  -/
   rcases h 2 with ⟨x, hx⟩
+  /- The rcases tactic introduces a new hypothesis hx : f x = 2 and a new variable x : ℝ such that f x = 2.
+     Note that the use of rcases with any expression, not just a hypothesis (h is a hypothesis but 2 is not)
+  -/
   use x
+  /- The use tactic is used to provide a witness for the existential quantifier ∃ x.
+    In this case, we use the x obtained from the rcases tactic as the witness.-/
   rw [hx]
   norm_num
 
@@ -169,6 +182,12 @@ variable {α : Type*} {β : Type*} {γ : Type*}
 variable {g : β → γ} {f : α → β}
 
 example (surjg : Surjective g) (surjf : Surjective f) : Surjective fun x ↦ g (f x) := by
-  sorry
+  intro y
+  rcases surjg y with ⟨b, hb⟩
+  rcases surjf b with ⟨a, ha⟩
+  dsimp
+  use a
+  rw [ha]
+  exact hb
 
 end
