@@ -1,6 +1,7 @@
 -- import LftCM.Common
 import Mathlib
 import LeanCopilot
+import Paperproof
 
 namespace C03S03
 
@@ -66,20 +67,35 @@ example : ¬FnHasUb fun x ↦ x := by
 #check (le_of_not_gt : ¬a > b → a ≤ b)
 
 example (h : Monotone f) (h' : f a < f b) : a < b := by
-  suggest_tactics
+  contrapose! h'
+  apply h
+  exact h'
+
+
+
 
 example (h : a ≤ b) (h' : f b < f a) : ¬Monotone f := by
-  sorry
+  intro hmono
+  have : f a ≤ f b := hmono h
+  linarith
+
 
 example : ¬∀ {f : ℝ → ℝ}, Monotone f → ∀ {a b}, f a ≤ f b → a ≤ b := by
   intro h
+  -- Notice that we can prove the negation of a universally quantified statement by giving a counterexample.
   let f := fun x : ℝ ↦ (0 : ℝ)
-  have monof : Monotone f := by sorry
+  have monof : Monotone f := by
+   intro
+   simp [f, Monotone]
   have h' : f 1 ≤ f 0 := le_refl _
-  sorry
+  have h'' : 1 ≤ 0 := h monof h'
+  linarith
 
 example (x : ℝ) (h : ∀ ε > 0, x < ε) : x ≤ 0 := by
-  sorry
+  contrapose! h
+  use x / 2
+  constructor <;> linarith
+
 
 end
 
@@ -87,16 +103,20 @@ section
 variable {α : Type*} (P : α → Prop) (Q : Prop)
 
 example (h : ¬∃ x, P x) : ∀ x, ¬P x := by
-  sorry
+  contrapose! h
+  assumption
 
 example (h : ∀ x, ¬P x) : ¬∃ x, P x := by
-  sorry
+  contrapose! h
+  assumption
 
 example (h : ¬∀ x, P x) : ∃ x, ¬P x := by
-  sorry
+  contrapose! h
+  assumption
 
 example (h : ∃ x, ¬P x) : ¬∀ x, P x := by
-  sorry
+  contrapose! h
+  assumption
 
 example (h : ¬∀ x, P x) : ∃ x, ¬P x := by
   by_contra h'
@@ -107,10 +127,12 @@ example (h : ¬∀ x, P x) : ∃ x, ¬P x := by
   exact h' ⟨x, h''⟩
 
 example (h : ¬¬Q) : Q := by
-  sorry
+  by_contra h'
+  exact h h'
 
 example (h : Q) : ¬¬Q := by
-  sorry
+  by_contra h'
+  exact h' h
 
 end
 
@@ -118,7 +140,8 @@ section
 variable (f : ℝ → ℝ)
 
 example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
-  sorry
+  contrapose! h
+  exact h
 
 example (h : ¬∀ a, ∃ x, f x > a) : FnHasUb f := by
   push_neg at h
@@ -130,7 +153,8 @@ example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
   exact h
 
 example (h : ¬Monotone f) : ∃ x y, x ≤ y ∧ f y < f x := by
-  sorry
+  contrapose! h
+  apply h
 
 example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
   contrapose! h
@@ -146,6 +170,8 @@ end
 section
 variable (a : ℕ)
 
+/-In classical logic, intuitionistic logic and similar logical systems, the *principle of explosion* (Latin: *ex falso* [sequitur] quodlibet, 'from falsehood, anything [follows]'; or ex contradictione [sequitur] quodlibet, 'from contradiction, anything [follows]'), or the principle of Pseudo-Scotus (falsely attributed to Duns Scotus), is the law according to which any statement can be proven from a contradiction.[1][2][3] That is, from a contradiction, any proposition (including its negation) can be inferred; this is known as deductive explosion.[4][5]
+-/
 example (h : 0 < 0) : a > 37 := by
   exfalso
   apply lt_irrefl 0 h
