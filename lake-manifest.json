@@ -76,7 +76,7 @@
   {"url": "https://github.com/Paper-Proof/paperproof.git",
    "type": "git",
    "subDir": "lean",
-   "rev": "4e2b17e68d1d839832587437f8ff1c3744d90e88",
+   "rev": "8207c09649394a73c516c35200720ff858124fbb",
    "name": "Paperproof",
    "manifestFile": "lake-manifest.json",
    "inputRev": "main",
