@@ -184,11 +184,13 @@ example : a < b ↔ a ≤ b ∧ a ≠ b := by
   constructor
   · intro h
     constructor
-    · aesop
-    · aesop
+    · apply h.left
+    · intro h'
+      apply h.right
+      rw [h']
   · intro h
     constructor
-    · aesop
+    · apply h.left
     · rcases h with ⟨h₀, h₁⟩
       intro h'
       apply h₁
@@ -202,10 +204,16 @@ variable (a b c : α)
 
 example : ¬a < a := by
   rw [lt_iff_le_not_le]
-  sorry
+  intro h
+  rcases h with ⟨h₀, h₁⟩
+  exact h₁ h₀
+
+
 
 example : a < b → b < c → a < c := by
-  simp only [lt_iff_le_not_le]
-  sorry
+  intro h₀ h₁
+  exact lt_trans h₀ h₁
+
+
 
 end

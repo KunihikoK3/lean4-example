@@ -1,5 +1,7 @@
-import LftCM.Common
-import Mathlib.Data.Real.Basic
+import Mathlib
+import LeanCopilot
+import Lean
+import Paperproof
 
 namespace C03S05
 
@@ -23,6 +25,8 @@ example (h : y < -1) : y > 0 ∨ y < -1 :=
 
 example : x < |y| → x < y ∨ x < -y := by
   rcases le_or_gt 0 y with h | h
+  /-This line performs case analysis on the expression le_or_gt 0 y, which represents the dichotomy that either 0 ≤ y or 0 > y. The rcases tactic destructures this dichotomy into two cases, introducing a new hypothesis h for each case.
+  -/
   · rw [abs_of_nonneg h]
     intro h; left; exact h
   . rw [abs_of_neg h]
@@ -59,10 +63,18 @@ example : x < |y| → x < y ∨ x < -y := by
 namespace MyAbs
 
 theorem le_abs_self (x : ℝ) : x ≤ |x| := by
-  sorry
+  rcases le_or_gt 0 x with h | h
+  · rw [abs_of_nonneg h]
+  · rw [abs_of_neg h]
+    linarith
 
 theorem neg_le_abs_self (x : ℝ) : -x ≤ |x| := by
-  sorry
+  cases le_or_gt 0 x
+  case inl h =>
+    rw [abs_of_nonneg h]
+    linarith
+  case inr h =>
+    rw [abs_of_neg h]
 
 theorem abs_add (x y : ℝ) : |x + y| ≤ |x| + |y| := by
   sorry
@@ -126,4 +138,3 @@ example (P : Prop) : ¬¬P → P := by
 
 example (P Q : Prop) : P → Q ↔ ¬P ∨ Q := by
   sorry
-
