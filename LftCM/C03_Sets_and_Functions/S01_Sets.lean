@@ -1,15 +1,17 @@
-import Mathlib.Data.Set.Lattice
-import Mathlib.Data.Nat.Prime
-import Mathlib.Data.Nat.Parity
-import LftCM.Common
+-- import Mathlib.Data.Set.Lattice
+import Mathlib
+import LeanCopilot
+import Lean
+import Paperproof
+--import Tactic
 
 -- .. _sets:
--- 
+--
 -- Sets
 -- ----
--- 
+--
 -- .. index:: set operations
--- 
+--
 -- If ``α`` is any type, the type ``Set α`` consists of sets
 -- of elements of ``α``.
 -- This type supports the usual set-theoretic operations and relations.
@@ -28,9 +30,9 @@ import LftCM.Common
 -- in their name.
 -- The expression ``x ∉ s`` abbreviates ``¬ x ∈ s``.
 -- You can type ``∈`` as ``\in`` or ``\mem`` and ``∉`` as ``\notin``.
--- 
+--
 -- .. index:: simp, tactics ; simp
--- 
+--
 -- One way to prove things about sets is to use ``rw``
 -- or the simplifier to expand the definitions.
 -- In the second example below, we use ``simp only``
@@ -82,7 +84,7 @@ example (h : s ⊆ t) : s ∩ u ⊆ t ∩ u :=
 -- too heavily.
 -- It is often convenient,
 -- but sometimes we have to fall back on unfolding definitions manually.
--- 
+--
 -- To deal with unions, we can use ``Set.union_def`` and ``Set.mem_union``.
 -- Since ``x ∈ s ∪ t`` unfolds to ``x ∈ s ∨ x ∈ t``,
 -- we can also use the ``cases`` tactic to force a definitional reduction.
@@ -113,7 +115,7 @@ example : s ∩ t ∪ s ∩ u ⊆ s ∩ (t ∪ u) := by
 -- It might help to know that when using ``rintro``,
 -- sometimes we need to use parentheses around a disjunctive pattern
 -- ``h1 | h2`` to get Lean to parse it correctly.
--- 
+--
 -- The library also defines set difference, ``s \ t``,
 -- where the backslash is a special unicode character
 -- entered as ``\\``.
@@ -183,7 +185,7 @@ example : s ∩ t = t ∩ s :=
 -- Remember that you can replace `sorry` by an underscore,
 -- and when you hover over it,
 -- Lean will show you what it expects at that point.
--- 
+--
 -- Here are some set-theoretic identities you might enjoy proving:
 example : s ∩ (s ∪ t) = s := by
   sorry
@@ -192,10 +194,13 @@ example : s ∪ s ∩ t = s := by
   sorry
 
 example : s \ t ∪ t = s ∪ t := by
-  sorry
+  ext x
+  simp
 
 example : s \ t ∪ t \ s = (s ∪ t) \ (s ∩ t) := by
-  sorry
+  ext x
+  simp
+  aesop
 
 -- When it comes to representing sets,
 -- here is what is going on underneath the hood.
@@ -206,7 +211,7 @@ example : s \ t ∪ t \ s = (s ∪ t) \ (s ∩ t) := by
 -- that ``P`` holds of ``a``.
 -- In the library, ``Set α`` is defined to be ``α → Prop`` and ``x ∈ s`` is defined to be ``s x``.
 -- In other words, sets are really properties, treated as objects.
--- 
+--
 -- The library also defines set-builder notation.
 -- The expression ``{ y | P y }`` unfolds to ``(fun y ↦ P y)``,
 -- so ``x ∈ { y | P y }`` reduces to ``P x``.
@@ -227,14 +232,14 @@ example : evens ∪ odds = univ := by
 -- you understand what is going on.
 -- Try deleting the line ``rw [evens, odds]``
 -- and confirm that the proof still works.
--- 
+--
 -- In fact, set-builder notation is used to define
--- 
+--
 -- - ``s ∩ t`` as ``{x | x ∈ s ∧ x ∈ t}``,
 -- - ``s ∪ t`` as ``{x | x ∈ s ∨ x ∈ t}``,
 -- - ``∅`` as ``{x | False}``, and
 -- - ``univ`` as ``{x | True}``.
--- 
+--
 -- We often need to indicate the type of ``∅`` and ``univ``
 -- explicitly,
 -- because Lean has trouble guessing which ones we mean.
@@ -254,7 +259,20 @@ example (x : ℕ) : x ∈ (univ : Set ℕ) :=
 -- We also recommend using the theorems
 -- ``Nat.Prime.eq_two_or_odd`` and ``Nat.even_iff``.
 example : { n | Nat.Prime n } ∩ { n | n > 2 } ⊆ { n | ¬Even n } := by
-  sorry
+  intro n
+  simp
+  -- rintro ⟨prime_n, n_gt_2⟩
+  intro h
+  rw [Nat.even_iff]
+  intro hn
+  rcases Nat.Prime.eq_two_or_odd h with h1 | h2
+  . linarith
+  . intro h3
+    linarith
+
+
+
+  -- exact Nat.Prime.eq_two_or_odd h hn
 
 -- Be careful: it is somewhat confusing that the library has multiple versions
 -- of the predicate ``Prime``.
@@ -274,7 +292,7 @@ example (n : ℕ) (h : Prime n) : Nat.Prime n := by
   exact h
 
 -- .. index:: rwa, tactics ; rwa
--- 
+--
 -- The `rwa` tactic follows a rewrite with the assumption tactic.
 example (n : ℕ) (h : Prime n) : Nat.Prime n := by
   rwa [Nat.prime_iff]
@@ -282,7 +300,7 @@ example (n : ℕ) (h : Prime n) : Nat.Prime n := by
 end
 
 -- .. index:: bounded quantifiers
--- 
+--
 -- Lean introduces the notation ``∀ x ∈ s, ...``,
 -- "for every ``x`` in ``s`` .,"
 -- as an abbreviation for  ``∀ x, x ∈ s → ...``.
@@ -375,7 +393,7 @@ example : (⋂ i, A i ∩ B i) = (⋂ i, A i) ∩ ⋂ i, B i := by
 -- indexed union or intersection because,
 -- as with the quantifiers,
 -- the scope of the bound variable extends as far as it can.
--- 
+--
 -- Try proving the following identity.
 -- One direction requires classical logic!
 -- We recommend using ``by_cases xs : x ∈ s``
@@ -446,3 +464,56 @@ end
 
 -- In the library, these identities are called
 -- ``sUnion_eq_biUnion`` and ``sInter_eq_biInter``.
+
+-- some basic facts on rintro and rcases
+/-The [rcases](https://lean-lang.org/blog/2024-4-4-lean-470/) tactic recursively case-splits a hypothesis, driven by a pattern written in a concise DSL that's inspired by Coq's [intro patterns](https://coq.inria.fr/doc/V8.18.0/refman/proof-engine/tactics.html#intro-patterns).
+-/
+example (p q : Prop) (h : p ∧ q) : q ∧ p := by
+  rcases h with ⟨hp, hq⟩
+  -- angle brackets are used for conjunctions
+  exact ⟨hq, hp⟩
+  -- note the order of the propositions in the angle brackets is reversed
+
+theorem test (h : p1 ∨ p2 ∨ p3) : p3 ∨ p2 ∨ p1 := by
+  rcases h with h1 | h2 | h3
+  . right
+    right
+    exact h1
+  . right
+    left
+    exact h2
+  . left
+    exact h3
+  -- vertical bars are used for disjunctions
+  -- all_goals simp [*]
+
+
+
+example {x y : ℝ} (h : x ≤ y ∧ x ≠ y) : ¬y ≤ x := by
+  rcases h with ⟨h₀, h₁⟩
+  contrapose! h₁
+  exact le_antisymm h₀ h₁
+
+theorem even_or_odd (n : Nat) :
+    (∃ half, n = 2 * half) ∨ (∃ half, n = 2 * half + 1) := by
+  induction n with
+  | zero => left; exists 0
+  | succ n' ih =>
+    rcases ih with ⟨half, prf⟩ | ⟨half, prf⟩
+    . right
+      exists half
+      show Nat.succ n' = Nat.succ (2 * half)
+      rw [prf]
+    . left
+      rw [prf]
+      exists half + 1
+
+  theorem test3 (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
+  by apply And.intro
+     exact hp
+     apply And.intro
+     exact hq
+     exact hp
+
+example (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
+refine ⟨hp, hq, hp⟩

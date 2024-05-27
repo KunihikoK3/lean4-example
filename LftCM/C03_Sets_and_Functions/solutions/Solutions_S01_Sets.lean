@@ -1,7 +1,9 @@
 import Mathlib.Data.Set.Lattice
 import Mathlib.Data.Nat.Prime
 import Mathlib.Data.Nat.Parity
-import LftCM.Common
+import LeanCopilot
+
+-- import LftCM.Common
 
 section
 variable {α : Type*}
@@ -77,6 +79,7 @@ example : s \ t ∪ t \ s = (s ∪ t) \ (s ∩ t) := by
     apply nxst
     constructor <;> assumption
 
+
 example : { n | Nat.Prime n } ∩ { n | n > 2 } ⊆ { n | ¬Even n } := by
   intro n
   simp
@@ -150,4 +153,3 @@ example : (⋃ p ∈ primes, { x | x ≤ p }) = univ := by
   use p, pge
 
 end
-
