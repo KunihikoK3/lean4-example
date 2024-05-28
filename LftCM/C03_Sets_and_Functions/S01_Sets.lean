@@ -338,10 +338,16 @@ section
 variable (ssubt : s ⊆ t)
 
 example (h₀ : ∀ x ∈ t, ¬Even x) (h₁ : ∀ x ∈ t, Prime x) : ∀ x ∈ s, ¬Even x ∧ Prime x := by
-  sorry
+  intro x xs
+  rcases ssubt xs with xt
+  constructor
+  · apply h₀ x xt
+  apply h₁ x xt
 
 example (h : ∃ x ∈ s, ¬Even x ∧ Prime x) : ∃ x ∈ t, Prime x := by
-  sorry
+  rcases h with ⟨x, xs, _ , prime_x⟩
+  use x
+  exact And.intro (ssubt xs) prime_x
 
 end
 
@@ -400,7 +406,23 @@ example : (⋂ i, A i ∩ B i) = (⋂ i, A i) ∩ ⋂ i, B i := by
 -- at an appropriate point in the proof.
 
 example : (s ∪ ⋂ i, A i) = ⋂ i, A i ∪ s := by
-  sorry
+  ext x
+  simp
+  constructor
+  · intro h
+    rcases h with h1 | h2
+    · intro i
+      exact Or.inr h1
+    · intro i
+      constructor
+      · exact h2 i
+  · intro h
+    by_cases xs : x ∈ s
+    · left
+      exact xs
+    · right
+      intro i
+      simp_all only [or_false]
 
 -- Mathlib also has bounded unions and intersections,
 -- which are analogous to the bounded quantifiers.
@@ -412,6 +434,10 @@ def primes : Set ℕ :=
   { x | Nat.Prime x }
 
 example : (⋃ p ∈ primes, { x | p ^ 2 ∣ x }) = { x | ∃ p ∈ primes, p ^ 2 ∣ x } :=by
+/-LHS is a union of sets indexed by primes \( p \). Each set contains all \( x \) that are divisible by \( p^2 \).
+
+RHS is the set of all \( x \) for which there exists a prime \( p \) such that \( p^2 \) divides \( x \).
+-/
   ext
   rw [mem_iUnion₂]
   simp
@@ -421,6 +447,9 @@ example : (⋃ p ∈ primes, { x | p ^ 2 ∣ x }) = { x | ∃ p ∈ primes, p ^ 
   simp
 
 example : (⋂ p ∈ primes, { x | ¬p ∣ x }) ⊆ { x | x = 1 } := by
+/-LHS is an intersection of sets indexed by primes \( p \). Each set contains all \( x \) that are *not* divisible by \( p \).
+- RHS the set containing the single element \( x = 1 \).
+-/
   intro x
   contrapose!
   simp
@@ -432,7 +461,17 @@ example : (⋂ p ∈ primes, { x | ¬p ∣ x }) ⊆ { x | x = 1 } := by
 -- is a good way to start the proof.
 -- We also recommend using the theorem ``Nat.exists_infinite_primes``.
 example : (⋃ p ∈ primes, { x | x ≤ p }) = univ := by
-  sorry
+  -- ext x
+  -- simp
+  apply eq_univ_of_forall
+  intro x
+  simp
+  rcases Nat.exists_infinite_primes x with ⟨p, hp, hpx⟩
+  use p, hpx
+
+
+
+
 
 end
 
