@@ -1,13 +1,12 @@
-import LftCM.Common
-import Mathlib.Data.Set.Lattice
-import Mathlib.Data.Set.Function
-import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib
+import LeanCopilot
+import Lean
 
 -- .. _functions:
--- 
+--
 -- Functions
 -- ---------
--- 
+--
 -- If ``f : α → β`` is a function and  ``p`` is a set of
 -- elements of type ``β``,
 -- the library defines ``preimage f p``, written ``f ⁻¹' p``,
@@ -50,7 +49,7 @@ example : f '' (s ∪ t) = f '' s ∪ f '' t := by
 
 -- Notice also that the ``use`` tactic applies ``rfl``
 -- to close goals when it can.
--- 
+--
 -- Here is another example:
 example : s ⊆ f ⁻¹' (f '' s) := by
   intro x xs
@@ -62,10 +61,26 @@ example : s ⊆ f ⁻¹' (f '' s) := by
 -- use a theorem specifically designed for that purpose.
 -- But knowing that the image is defined in terms
 -- of an existential quantifier is often convenient.
--- 
+--
 -- The following equivalence is a good exercise:
 example : f '' s ⊆ v ↔ s ⊆ f ⁻¹' v := by
-  sorry
+  constructor
+  · intro h x xs
+    show x ∈ f ⁻¹' v
+    show f x ∈ v
+    exact h (mem_image_of_mem f xs)
+  · intro h y ⟨x, xs, fxeq⟩
+    -- show y ∈ v
+    -- aesop -- alternative solution
+    have h1 : f x ∈ v := by
+      exact h xs
+    -- aesop_subst fxeq -- alternative solution
+    -- exact h1
+    rwa [← fxeq]
+
+
+
+
 
 -- It shows that ``image f`` and ``preimage f`` are
 -- an instance of what is known as a *Galois connection*
@@ -78,41 +93,126 @@ example : f '' s ⊆ v ↔ s ⊆ f ⁻¹' v := by
 -- because ``y ∈ f ⁻¹' t`` unfolds to ``f y ∈ t``
 -- whereas working with ``x ∈ f '' s`` requires
 -- decomposing an existential quantifier.
--- 
+--
 -- Here is a long list of set-theoretic identities for
 -- you to enjoy.
 -- You don't have to do all of them at once;
 -- do a few of them,
 -- and set the rest aside for a rainy day.
 example (h : Injective f) : f ⁻¹' (f '' s) ⊆ s := by
-  sorry
+intro x
+intro h1
+-- simp_all only [preimage_image_eq, mem_image]
+simp_all only [preimage_image_eq]
+
+example (h : Injective f) : f ⁻¹' (f '' s) ⊆ s := by
+  rintro x ⟨y, ys, fxeq⟩
+  rw [← h fxeq]
+  exact ys
 
 example : f '' (f ⁻¹' u) ⊆ u := by
-  sorry
+  rintro y ⟨x, h, rfl⟩
+  exact h
 
 example (h : Surjective f) : u ⊆ f '' (f ⁻¹' u) := by
-  sorry
+  rintro y h1
+  simp_all only [image_preimage_eq]
+
+example (h : Surjective f) : u ⊆ f '' (f ⁻¹' u) := by
+  rintro y h1
+  rw [image_preimage_eq u h]
+  exact h1
+
+example (h : Surjective f) : u ⊆ f '' (f ⁻¹' u) := by
+  intro y yu
+  rcases h y with ⟨x, fxeq⟩
+  use x
+  constructor
+  · show f x ∈ u
+    rw [fxeq]
+    exact yu
+  exact fxeq
+
+
 
 example (h : s ⊆ t) : f '' s ⊆ f '' t := by
-  sorry
+  rintro y ⟨x, xs, fxeq⟩
+  use x, h xs, fxeq
+
 
 example (h : u ⊆ v) : f ⁻¹' u ⊆ f ⁻¹' v := by
-  sorry
+  intro x h1
+  show f x ∈ v
+  exact h h1
 
 example : f ⁻¹' (u ∪ v) = f ⁻¹' u ∪ f ⁻¹' v := by
-  sorry
+  ext x
+  simp
 
 example : f '' (s ∩ t) ⊆ f '' s ∩ f '' t := by
-  sorry
+  rintro y ⟨x, ⟨xs, xt⟩, fxeq⟩
+  constructor
+  · use x, xs, fxeq
+  · use x, xt, fxeq
 
 example (h : Injective f) : f '' s ∩ f '' t ⊆ f '' (s ∩ t) := by
-  sorry
+  rintro y ⟨⟨x1, xs, fxeq⟩, ⟨x2, xt, fxeq'⟩⟩
+  have h1: x1 = x2 := h (by rw [fxeq, fxeq'])
+  simp
+  use x1
+  constructor
+  · constructor
+    · exact xs
+    · rwa [h1]
+  · exact fxeq
 
 example : f '' s \ f '' t ⊆ f '' (s \ t) := by
-  sorry
+  rintro y ⟨⟨x1, xs, fseq⟩⟩
+  aesop
+
+
+example : f '' s \ f '' t ⊆ f '' (s \ t) := by
+  rintro y ⟨⟨x1, xs, fseq⟩, y_not_in_ft⟩
+  use x1
+  constructor
+  · rw [@mem_diff]
+    constructor
+    · exact xs
+    · simp_all
+      subst fseq
+      exact fun a => y_not_in_ft x1 a rfl
+  · exact fseq
 
 example : f ⁻¹' u \ f ⁻¹' v ⊆ f ⁻¹' (u \ v) := by
-  sorry
+  rintro y ⟨h1, h2⟩
+  -- have h3 : f y ∈ u := by exact h1
+  -- have h4 : f y ∉ v := by exact h2
+  rw [@mem_preimage]
+  constructor
+  · exact h1
+  · exact h2
+
+example : f ⁻¹' u \ f ⁻¹' v ⊆ f ⁻¹' (u \ v) := by
+  rintro y ⟨h1, h2⟩
+  have h3 : f y ∈ u := by exact h1
+  have h4 : f y ∉ v := by exact h2
+  rw [@mem_preimage]
+  constructor
+  · exact h3
+  · exact h4
+
+example : f ⁻¹' u \ f ⁻¹' v ⊆ f ⁻¹' (u \ v) :=
+  fun x ↦ id
+/- **Direct Proof:** (from GPT-4)
+   - Assume \( x \in f^{-1}(u) \setminus f^{-1}(v) \).
+   - By definition, \( x \in f^{-1}(u) \) and \( x \notin f^{-1}(v) \).
+   - This means \( f(x) \in u \) and \( f(x) \notin v \).
+   - Therefore, \( f(x) \in u \setminus v \).
+   - Hence, \( x \in f^{-1}(u \setminus v) \).
+
+The proof `fun x ↦ id` succinctly captures this reasoning. It shows that any element \( x \) from \( f^{-1}(u) \setminus f^{-1}(v) \) naturally belongs to \( f^{-1}(u \setminus v) \) by definition. The identity function (`id`) just maps \( x \) to itself, which is all that's needed to demonstrate this subset relationship.-/
+
+
 
 example : f '' s ∩ v = f '' (s ∩ f ⁻¹' v) := by
   sorry
@@ -189,7 +289,7 @@ end
 -- to their full domain,
 -- there are often relativized versions that restrict
 -- the statements to a subset of the domain type.
--- 
+--
 -- Here is are some examples of ``InjOn`` and ``range`` in use:
 section
 
@@ -261,7 +361,7 @@ example : P (Classical.choose h) :=
 -- is some ``x`` satisfying ``P x``.
 -- The theorem ``Classical.choose_spec h`` says that ``Classical.choose h``
 -- meets this specification.
--- 
+--
 -- With these in hand, we can define the inverse function
 -- as follows:
 noncomputable section
@@ -288,7 +388,7 @@ theorem inverse_spec {f : α → β} (y : β) (h : ∃ x, f x = y) : f (inverse 
 -- and, similarly, ``dif_neg h`` rewrites it to ``b`` given ``h : ¬ e``.
 -- The theorem ``inverse_spec`` says that ``inverse f``
 -- meets the first part of this specification.
--- 
+--
 -- Don't worry if you do not fully understand how these work.
 -- The theorem ``inverse_spec`` alone should be enough to show
 -- that ``inverse f`` is a left inverse if and only if ``f`` is injective
