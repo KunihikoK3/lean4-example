@@ -235,25 +235,53 @@ example : s ∪ f ⁻¹' u ⊆ f ⁻¹' (f '' s ∪ u) := by
 -- to unfold the meaning of an equation or inclusion between sets,
 -- and then calling ``simp`` to unpack the conditions for membership.
 variable {I : Type*} (A : I → Set α) (B : I → Set β)
-
+/-A is a function that takes an index i from the type I and returns a set of type Set α. Therefore, A i is a set of type Set α for some index i.
+-/
 example : (f '' ⋃ i, A i) = ⋃ i, f '' A i := by
-  ext y; simp
+  ext y
+  simp
   constructor
-  · rintro ⟨x, ⟨i, xAi⟩, fxeq⟩
-    use i, x
-  rintro ⟨i, x, xAi, fxeq⟩
-  exact ⟨x, ⟨i, xAi⟩, fxeq⟩
+  · rintro ⟨x, ⟨exists_i,fxeq⟩⟩
+    rw [@exists_comm]
+    -- This rewrites the goal using the commutativity of the existential quantifier, allowing us to switch the order of the quantifiers
+    simp_all
+    /-
+    case h.mp.intro.intro
+    α : Type u_1
+    β : Type u_2
+    f : α → β
+    s t : Set α
+    u v : Set β
+    I : Type u_3
+    A : I → Set α
+    B : I → Set β
+    y : β
+    x : α
+    exists_i : ∃ i, x ∈ A i
+    fxeq : f x = y
+    ⊢ ∃ b, (∃ x, b ∈ A x) ∧ f b = y  this goal should be stated as ∃ b, (∃ i, b ∈ A i) ∧ f b = y
+    which makes it clearer that use x is the right tactic to use
+    -/
+    use x
+
+  · rintro ⟨i, ⟨x, xAi, fxeq⟩⟩
+    use x
+    simp_all
+    --exact
+    exact ⟨i, xAi⟩
 
 example : (f '' ⋂ i, A i) ⊆ ⋂ i, f '' A i := by
-  intro y; simp
-  intro x h fxeq i
-  use x
-  exact ⟨h i, fxeq⟩
+  intro y
+  simp
+  rintro x h fxeq
+  intro i
+  exact ⟨x, h i, fxeq⟩
+
 
 example (i : I) (injf : Injective f) : (⋂ i, f '' A i) ⊆ f '' ⋂ i, A i := by
   intro y; simp
   intro h
-  rcases h i with ⟨x, xAi, fxeq⟩
+  rcases h i with ⟨x, _ , fxeq⟩
   use x; constructor
   · intro i'
     rcases h i' with ⟨x', x'Ai, fx'eq⟩
@@ -315,16 +343,43 @@ example : range exp = { y | y > 0 } := by
 
 -- Try proving these:
 example : InjOn sqrt { x | x ≥ 0 } := by
-  sorry
+  intro x xpos y ypos
+  intro e
+  calc
+    x = sqrt (x ^ 2) := by rw [sqrt_sq xpos]
+    _ = sqrt (y ^ 2) := by simp_all
+    _ = y := by rw [sqrt_sq ypos]
 
 example : InjOn (fun x ↦ x ^ 2) { x : ℝ | x ≥ 0 } := by
-  sorry
+  intro x xpos y ypos
+  intro e
+  calc
+    x = sqrt (x ^ 2) := by rw [sqrt_sq xpos]
+    _ = sqrt (y ^ 2) := by simp_all
+    _ = y := by rw [sqrt_sq ypos]
 
 example : sqrt '' { x | x ≥ 0 } = { y | y ≥ 0 } := by
-  sorry
+  ext y; constructor
+  · rintro ⟨x, _, sqeq⟩
+    rw [← sqeq]
+    simp
+    apply sqrt_nonneg
+  · rintro ypos
+    use y ^ 2
+    simp
+    constructor
+    · exact pow_two_nonneg y
+    · rw [sqrt_sq ypos]
+
 
 example : (range fun x ↦ x ^ 2) = { y : ℝ | y ≥ 0 } := by
-  sorry
+  ext y; constructor
+  · rintro ⟨x, rfl⟩
+    exact pow_two_nonneg x
+  · rintro ypos
+    use sqrt y
+    simp_all
+
 
 end
 
